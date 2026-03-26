@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Farola.Application/Farola.Application.csproj" />
+    <Project Path="src/Farola.Client/Farola.Client.csproj" />
+    <Project Path="src/Farola.Domain/Farola.Domain.csproj" />
+    <Project Path="src/Farola.Infrastructure/Farola.Infrastructure.csproj" />
+    <Project Path="src/Farola.Shared/Farola.Shared.csproj" />
+    <Project Path="src/Farola.WebApi/Farola.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Farola.Application.Tests/Farola.Application.Tests.csproj" />
+    <Project Path="tests/Farola.Domain.Tests/Farola.Domain.Tests.csproj" />
+    <Project Path="tests/Farola.Infrastructure.Tests/Farola.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Farola.WebApi.Tests/Farola.WebApi.Tests.csproj" />
+  </Folder>
+</Solution>

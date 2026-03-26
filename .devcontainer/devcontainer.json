@@ -1,0 +1,13 @@
+{
+  "name": "Farola .NET 10",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:0-10.0",
+  "forwardPorts": [5000, 5001], // Порты для WebApi и, например, клиента
+  "postCreateCommand": "dotnet restore", // Восстановление зависимостей при создании
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp"
+      ]
+    }
+  }
+}
