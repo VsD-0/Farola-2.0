@@ -1,6 +1,8 @@
 ﻿using Farola.Domain.Interfaces.Repositories;
+using Farola.Domain.Interfaces.Services;
 using Farola.Infrastructure.Data.Configurations;
 using Farola.Infrastructure.Data.Repositories;
+using Farola.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,9 @@ namespace Farola.Infrastructure
 
             services.AddScoped<IUserRepository, UserRepository>();
             // Здесь позже добавите регистрацию репозиториев: services.AddScoped<IUserRepository, UserRepository>();
+
+            services.AddScoped<ITokenService, JwtTokenService>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             return services;
         }

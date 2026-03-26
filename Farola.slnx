@@ -14,7 +14,4 @@
     <Project Path="tests/Farola.WebApi.Tests/Farola.WebApi.Tests.csproj" />
   </Folder>
   <Build />
-  <Project Path="docker-compose.dcproj">
-    <Build />
-  </Project>
 </Solution>
