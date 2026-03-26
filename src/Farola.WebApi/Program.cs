@@ -2,25 +2,20 @@ using Farola.Infrastructure;
 using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
+using Farola.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"Connection string: {connectionString}");
+builder.Services.AddApplication();
 builder.Services.AddSwaggerGen();
 // http://localhost:5000/swagger/index.html
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<FarolaDbContext>();
-    db.Database.Migrate();
-}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -60,6 +55,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapControllers();
 app.MapGet("/", () => "Farola API is running!");
 
 if (app.Environment.IsDevelopment())

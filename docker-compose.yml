@@ -7,11 +7,12 @@ services:
       - "5000:80"      # Сопоставляет порт 5000 хоста с портом 80 контейнера
       - "5001:443"     # Для HTTPS (если настроен)
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=Farola;Username=postgres;Password=FarolaPassword123
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=Farola;Username=postgres;Password=FarolaPassword123;Include Error Detail=true
 
   postgres-db:
     image: postgres:16
@@ -23,6 +24,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Farola"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
