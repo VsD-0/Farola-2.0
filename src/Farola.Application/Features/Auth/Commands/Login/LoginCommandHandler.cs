@@ -9,25 +9,27 @@ namespace Farola.Application.Features.Auth.Commands.Login
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IPasswordHasher _passwordHasher;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
             ITokenService tokenService,
-            IRefreshTokenRepository refreshTokenRepository)
+            IRefreshTokenRepository refreshTokenRepository,
+            IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _refreshTokenRepository = refreshTokenRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null)
+            if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            // TODO: заменить на хэширование пароля
-            if (user.Password != request.Password)
+            if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
             // Генерируем токены
@@ -40,7 +42,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 UserId = user.Id,
                 Token = refreshToken,
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7) // срок жизни
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
             await _refreshTokenRepository.AddAsync(refreshTokenEntity);
 

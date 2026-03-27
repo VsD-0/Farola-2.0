@@ -1,4 +1,5 @@
 ﻿using Farola.Domain.Entities;
+using Farola.Domain.Interfaces.Services;
 using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +8,17 @@ namespace Farola.Infrastructure.Data
 {
     public class DbSeeder
     {
-        public static async Task SeedAsync(FarolaDbContext context)
+        private readonly FarolaDbContext _context;
+        private readonly IPasswordHasher _passwordHasher;
+
+        public DbSeeder(FarolaDbContext context, IPasswordHasher passwordHasher)
         {
-            // Проверяем, есть ли уже данные, чтобы не перезаписывать
+            _context = context;
+            _passwordHasher = passwordHasher;
+        }
+
+        public async Task SeedAsync(FarolaDbContext context)
+        {
             if (await context.Roles.AnyAsync())
                 return;
 
@@ -20,7 +29,7 @@ namespace Farola.Infrastructure.Data
             new Role { Id = 2, Name = "Professional" },
             new Role { Id = 3, Name = "Admin" }
         };
-            await context.Roles.AddRangeAsync(roles);
+            await _context.Roles.AddRangeAsync(roles);
 
             // 2. Статусы заявлений
             var statuses = new List<StatementStatus>
@@ -30,7 +39,7 @@ namespace Farola.Infrastructure.Data
             new StatementStatus { Id = 3, Name = "Completed" },
             new StatementStatus { Id = 4, Name = "Cancelled" }
         };
-            await context.StatementStatuses.AddRangeAsync(statuses);
+            await _context.StatementStatuses.AddRangeAsync(statuses);
 
             // 3. Специализации
             var specializations = new List<Specialization>
@@ -39,8 +48,8 @@ namespace Farola.Infrastructure.Data
             new Specialization { Name = "Дизайнер", Photo = "designer.jpg" },
             new Specialization { Name = "Маркетолог", Photo = "marketer.jpg" }
         };
-            await context.Specializations.AddRangeAsync(specializations);
-            await context.SaveChangesAsync(); // сохраняем, чтобы получить Id
+            await _context.Specializations.AddRangeAsync(specializations);
+            await _context.SaveChangesAsync();
 
             // 4. Пользователи
             var client = new User
@@ -51,7 +60,7 @@ namespace Farola.Infrastructure.Data
                 Patronymic = "Петрович",
                 PhoneNumber = "+79991112233",
                 Email = "client@example.com",
-                Password = "hashed_password_here", // временно, в реальном проекте хэшируйте!
+                Password = _passwordHasher.HashPassword("hashed_password_here"),
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
             };
@@ -64,7 +73,7 @@ namespace Farola.Infrastructure.Data
                 Patronymic = "Иванович",
                 PhoneNumber = "+79994445566",
                 Email = "professional@example.com",
-                Password = "hashed_password_here",
+                Password = _passwordHasher.HashPassword("hashed_password_here"),
                 Profession = "Разработчик C#",
                 SpecializationId = specializations.First(s => s.Name == "Программист").Id,
                 Area = "Москва",
@@ -81,13 +90,13 @@ namespace Farola.Infrastructure.Data
                 Name = "Админ",
                 PhoneNumber = "+79990000000",
                 Email = "admin@example.com",
-                Password = "hashed_password_here",
+                Password = _passwordHasher.HashPassword("hashed_password_here"),
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
             };
 
-            await context.Users.AddRangeAsync(client, professional, admin);
-            await context.SaveChangesAsync();
+            await _context.Users.AddRangeAsync(client, professional, admin);
+            await _context.SaveChangesAsync();
         }
     }
 }
