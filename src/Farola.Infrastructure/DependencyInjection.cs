@@ -17,7 +17,6 @@ namespace Farola.Infrastructure
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Пробуем получить из переменной окружения напрямую
                 connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
             }
 

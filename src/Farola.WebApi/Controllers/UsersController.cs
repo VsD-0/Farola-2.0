@@ -2,6 +2,7 @@
 using Farola.Application.Features.Users.Queries.GetUserById;
 using Farola.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Farola.WebApi.Controllers

@@ -32,11 +32,9 @@ namespace Farola.Application.Features.Auth.Commands.Login
             if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
-            // Генерируем токены
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
-            // Сохраняем refresh token в БД
             var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
                 UserId = user.Id,

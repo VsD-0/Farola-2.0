@@ -1,8 +1,8 @@
 ﻿using Farola.Domain.Entities;
 using Farola.Domain.Interfaces.Repositories;
-using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
+
 namespace Farola.Infrastructure.Data.Repositories
 {
     public class RefreshTokenRepository : IRefreshTokenRepository

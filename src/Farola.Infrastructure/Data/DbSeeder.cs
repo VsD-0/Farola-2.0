@@ -1,6 +1,5 @@
 ﻿using Farola.Domain.Entities;
 using Farola.Domain.Interfaces.Services;
-using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 

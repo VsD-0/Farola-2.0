@@ -26,11 +26,9 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             if (user == null)
                 throw new UnauthorizedAccessException("User not found");
 
-            // Генерируем новые токены
             var newAccessToken = _tokenService.GenerateAccessToken(user);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
-            // Обновляем refresh token в БД (или создаём новый)
             await _refreshTokenRepository.RevokeTokenAsync(storedToken);
             var newRefreshTokenEntity = new Domain.Entities.RefreshToken
             {

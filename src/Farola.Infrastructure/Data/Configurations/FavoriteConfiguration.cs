@@ -15,7 +15,6 @@ namespace Farola.Infrastructure.Data.Configurations
             builder.Property(f => f.ProfessionalId).HasColumnName("professional_id").HasComment("Номер специалиста");
             builder.Property(f => f.ClientId).HasColumnName("client_id").HasComment("Номер клиента");
 
-            // Составной уникальный индекс для пары (professional_id, client_id)
             builder.HasIndex(f => new { f.ProfessionalId, f.ClientId })
                 .IsUnique()
                 .HasDatabaseName("ix_favorites_professional_client");

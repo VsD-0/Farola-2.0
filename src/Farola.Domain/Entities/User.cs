@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace Farola.Domain.Entities
+﻿namespace Farola.Domain.Entities
 {
     public class User
     {
@@ -20,7 +18,6 @@ namespace Farola.Domain.Entities
         public string? Patronymic { get; set; }
         public bool IsClosed { get; set; }
 
-        // Навигационные свойства
         public virtual Role Role { get; set; } = null!;
         public virtual Specialization? Specialization { get; set; }
         public virtual ICollection<Favorite> FavoriteClients { get; set; } = new List<Favorite>();

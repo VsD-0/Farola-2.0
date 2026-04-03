@@ -17,7 +17,6 @@ namespace Farola.Infrastructure.Data.Configurations
             builder.Property(rt => rt.CreatedAt).HasColumnName("createdat").HasDefaultValueSql("CURRENT_TIMESTAMP").HasComment("Дата и время создания");
             builder.Property(rt => rt.ExpiresAt).HasColumnName("expiresat").HasComment("Дата и время истечения срока действия");
 
-            // Индекс для быстрого поиска по токену
             builder.HasIndex(rt => rt.Token).IsUnique().HasDatabaseName("ix_refresh_tokens_token");
 
             builder.HasOne(rt => rt.User)

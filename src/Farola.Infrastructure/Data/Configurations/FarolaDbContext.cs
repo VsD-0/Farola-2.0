@@ -1,14 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Farola.Domain.Entities;
-using Farola.Infrastructure.Data.Configurations;
 
 namespace Farola.Infrastructure.Data.Configurations
 {
     public class FarolaDbContext : DbContext
     {
-        public FarolaDbContext(DbContextOptions<FarolaDbContext> options) : base(options)
-        {
-        }
+        public FarolaDbContext(DbContextOptions<FarolaDbContext> options) : base(options) {}
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Role> Roles => Set<Role>();

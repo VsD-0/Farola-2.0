@@ -20,7 +20,6 @@ namespace Farola.Infrastructure.Data.Configurations
             builder.Property(s => s.Grade).HasColumnName("grade").HasComment("Оценка специалиста на заказ");
             builder.Property(s => s.Comment).HasColumnName("comment").HasComment("Комментарий специалиста");
 
-            // Индексы для ускорения поиска
             builder.HasIndex(s => s.ProfessionalId).HasDatabaseName("ix_statements_professional_id");
             builder.HasIndex(s => s.ClientId).HasDatabaseName("ix_statements_client_id");
             builder.HasIndex(s => s.StatusId).HasDatabaseName("ix_statements_status_id");

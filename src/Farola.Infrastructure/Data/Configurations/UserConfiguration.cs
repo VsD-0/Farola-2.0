@@ -28,15 +28,13 @@ namespace Farola.Infrastructure.Data.Configurations
             builder.Property(u => u.Patronymic).HasColumnName("patronymic").HasMaxLength(80).HasComment("Отчество");
             builder.Property(u => u.IsClosed).HasColumnName("is_closed").HasDefaultValue(false).HasComment("Статус профиля специалиста (открыт/закрыт)");
 
-            // Индексы
             builder.HasIndex(u => u.Email).IsUnique().HasDatabaseName("ix_users_email");
             builder.HasIndex(u => u.PhoneNumber).IsUnique().HasDatabaseName("ix_users_phone");
 
-            // Связи
             builder.HasOne(u => u.Role)
                 .WithMany(r => r.Users)
                 .HasForeignKey(u => u.RoleId)
-                .OnDelete(DeleteBehavior.Restrict) // нельзя удалить роль, если есть пользователи
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_user_role");
 
             builder.HasOne(u => u.Specialization)
