@@ -1,34 +1,36 @@
-﻿using MediatR;
+﻿using Farola.Application.Common.Models;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Farola.Application.Features.Auth.Commands.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
             ITokenService tokenService,
             IRefreshTokenRepository refreshTokenRepository,
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _refreshTokenRepository = refreshTokenRepository;
             _passwordHasher = passwordHasher;
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<AuthResult> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
-                throw new UnauthorizedAccessException("Invalid credentials");
-
             if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
@@ -37,14 +39,20 @@ namespace Farola.Application.Features.Auth.Commands.Login
 
             var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
-                UserId = user.Id,
                 Token = refreshToken,
+                UserId = user.Id,
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                IsRevoked = false,
+                DeviceId = request.DeviceId,
+                DeviceName = request.DeviceName,
+                IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString()
             };
-            await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+            await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
+            await _refreshTokenRepository.SaveChangesAsync(cancellationToken);
 
-            return new LoginResult(accessToken, refreshToken);
+            return new AuthResult(accessToken, refreshToken);
         }
     }
 }

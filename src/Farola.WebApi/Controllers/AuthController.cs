@@ -1,7 +1,8 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
+﻿using Farola.Application.Common.Models;
 using Farola.Application.Features.Auth.Commands.Login;
 using Farola.Application.Features.Auth.Commands.RefreshToken;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Farola.WebApi.Controllers
 {
@@ -17,14 +18,14 @@ namespace Farola.WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResult>> Login(LoginCommand command)
+        public async Task<ActionResult<AuthResult>> Login(LoginCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<LoginResult>> Refresh(RefreshTokenCommand command)
+        public async Task<ActionResult<AuthResult>> Refresh(RefreshTokenCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);

@@ -4,9 +4,12 @@ namespace Farola.Domain.Interfaces.Repositories
 {
     public interface IRefreshTokenRepository
     {
-        Task<RefreshToken?> GetByTokenAsync(string token);
-        Task AddAsync(RefreshToken refreshToken);
-        Task RevokeTokenAsync(RefreshToken refreshToken);
-        Task RevokeAllUserTokensAsync(int userId);
+        Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default);
+        Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
+        Task UpdateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
+        Task RevokeAllUserTokensAsync(int userId, CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+        Task<RefreshToken?> GetByDeviceIdAndUserIdAsync(string deviceId, int userId, CancellationToken cancellationToken = default);
     }
 }

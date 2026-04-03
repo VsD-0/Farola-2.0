@@ -13,6 +13,15 @@ namespace Farola.Application.Features.Auth.Commands.Login
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required")
                 .MinimumLength(4).WithMessage("Password must be at least 4 characters");
+
+            RuleFor(x => x.DeviceId)
+            .NotEmpty().WithMessage("DeviceId is required")
+            .Matches(@"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$")
+            .WithMessage("DeviceId must be a valid UUID");
+
+            RuleFor(x => x.DeviceName)
+                .NotEmpty().WithMessage("DeviceName is required")
+                .MaximumLength(100).WithMessage("DeviceName must not exceed 100 characters");
         }
     }
 }

@@ -14,31 +14,49 @@ namespace Farola.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<RefreshToken?> GetByTokenAsync(string token)
+        public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken)
         {
             return await _context.RefreshTokens
                 .Include(rt => rt.User)
-                .ThenInclude(u => u.Role)
-                .FirstOrDefaultAsync(rt => rt.Token == token);
+                .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
         }
 
-        public async Task AddAsync(RefreshToken refreshToken)
+        public async Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
         {
-            await _context.RefreshTokens.AddAsync(refreshToken);
-            await _context.SaveChangesAsync();
+            await _context.RefreshTokens.AddAsync(refreshToken, cancellationToken);
         }
 
-        public async Task RevokeTokenAsync(RefreshToken refreshToken)
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
         {
-            _context.RefreshTokens.Remove(refreshToken);
-            await _context.SaveChangesAsync();
+            _context.RefreshTokens.Update(refreshToken);
+            return Task.CompletedTask;
         }
 
-        public async Task RevokeAllUserTokensAsync(int userId)
+        public async Task RevokeAllUserTokensAsync(int userId, CancellationToken cancellationToken)
         {
-            var tokens = _context.RefreshTokens.Where(rt => rt.UserId == userId);
-            _context.RefreshTokens.RemoveRange(tokens);
-            await _context.SaveChangesAsync();
+            var tokens = await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+                .ToListAsync(cancellationToken);
+            foreach (var token in tokens)
+                token.IsRevoked = true;
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            return await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId, CancellationToken cancellationToken)
+        {
+            return await _context.RefreshTokens
+                .Where(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<RefreshToken?> GetByDeviceIdAndUserIdAsync(string deviceId, int userId, CancellationToken cancellationToken)
+        {
+            return await _context.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.DeviceId == deviceId && rt.UserId == userId, cancellationToken);
         }
     }
 }

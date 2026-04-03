@@ -3,6 +3,7 @@ using System;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Farola.Infrastructure.Migrations
 {
     [DbContext(typeof(FarolaDbContext))]
-    partial class FarolaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260403182504_AddIsRevokedToRefreshToken2")]
+    partial class AddIsRevokedToRefreshToken2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,28 +76,13 @@ namespace Farola.Infrastructure.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP")
                         .HasComment("Дата и время создания");
 
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeviceName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiresat")
                         .HasComment("Дата и время истечения срока действия");
 
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastUsedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Token")
                         .IsRequired()
@@ -102,10 +90,6 @@ namespace Farola.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("token")
                         .HasComment("Токен");
-
-                    b.Property<string>("UserAgent")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer")
