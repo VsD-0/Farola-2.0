@@ -1,4 +1,5 @@
 ﻿using Farola.Application.Common.Models;
+using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
@@ -13,19 +14,22 @@ namespace Farola.Application.Features.Auth.Commands.Login
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUnitOfWork _unitOfWork;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
             ITokenService tokenService,
             IRefreshTokenRepository refreshTokenRepository,
             IPasswordHasher passwordHasher,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _refreshTokenRepository = refreshTokenRepository;
             _passwordHasher = passwordHasher;
             _httpContextAccessor = httpContextAccessor;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthResult> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -50,7 +54,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString()
             };
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
-            await _refreshTokenRepository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new AuthResult(accessToken, refreshToken);
         }

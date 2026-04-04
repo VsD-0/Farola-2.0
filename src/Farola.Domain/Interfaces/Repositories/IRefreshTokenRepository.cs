@@ -8,7 +8,6 @@ namespace Farola.Domain.Interfaces.Repositories
         Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
         Task UpdateAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default);
         Task RevokeAllUserTokensAsync(int userId, CancellationToken cancellationToken = default);
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId, CancellationToken cancellationToken = default);
         Task<RefreshToken?> GetByDeviceIdAndUserIdAsync(string deviceId, int userId, CancellationToken cancellationToken = default);
     }

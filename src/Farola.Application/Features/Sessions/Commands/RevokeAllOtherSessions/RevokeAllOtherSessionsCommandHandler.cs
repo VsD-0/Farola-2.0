@@ -1,9 +1,10 @@
-﻿using Farola.Domain.Interfaces.Repositories;
+﻿using Farola.Domain.Interfaces;
+using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using System.Security.Authentication;
+using System.Security.Claims;
 
 namespace Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions
 {
@@ -13,17 +14,20 @@ namespace Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RevokeAllOtherSessionsCommandHandler(
             IRefreshTokenRepository refreshTokenRepository,
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IUnitOfWork unitOfWork)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _httpContextAccessor = httpContextAccessor;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Handle(RevokeAllOtherSessionsCommand request, CancellationToken cancellationToken)
@@ -48,7 +52,7 @@ namespace Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions
                 token.IsRevoked = true;
                 await _refreshTokenRepository.UpdateAsync(token, cancellationToken);
             }
-            await _refreshTokenRepository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
     }
 }

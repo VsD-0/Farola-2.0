@@ -1,4 +1,5 @@
-﻿using Farola.Domain.Interfaces.Repositories;
+﻿using Farola.Domain.Interfaces;
+using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
@@ -36,6 +37,8 @@ namespace Farola.Infrastructure
 
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IRoleCacheService, RoleCacheService>();
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

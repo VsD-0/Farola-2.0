@@ -41,11 +41,6 @@ namespace Farola.Infrastructure.Data.Repositories
                 token.IsRevoked = true;
         }
 
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
-        {
-            return await _context.SaveChangesAsync(cancellationToken);
-        }
-
         public async Task<List<RefreshToken>> GetActiveByUserIdAsync(int userId, CancellationToken cancellationToken)
         {
             return await _context.RefreshTokens

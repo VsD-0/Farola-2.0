@@ -1,4 +1,5 @@
 ﻿using Farola.Domain.Entities;
+using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Services;
 using Farola.Infrastructure.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,13 @@ namespace Farola.Infrastructure.Data
     {
         private readonly FarolaDbContext _context;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DbSeeder(FarolaDbContext context, IPasswordHasher passwordHasher)
+        public DbSeeder(FarolaDbContext context, IPasswordHasher passwordHasher, IUnitOfWork unitOfWork)
         {
             _context = context;
             _passwordHasher = passwordHasher;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task SeedAsync(FarolaDbContext context)
@@ -48,7 +51,7 @@ namespace Farola.Infrastructure.Data
             new Specialization { Name = "Маркетолог", Photo = "marketer.jpg" }
         };
             await _context.Specializations.AddRangeAsync(specializations);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             // 4. Пользователи
             var client = new User
@@ -95,7 +98,7 @@ namespace Farola.Infrastructure.Data
             };
 
             await _context.Users.AddRangeAsync(client, professional, admin);
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

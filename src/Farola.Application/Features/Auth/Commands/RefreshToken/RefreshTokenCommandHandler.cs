@@ -1,5 +1,6 @@
 ﻿using Farola.Application.Common.Models;
 using Farola.Application.Features.Auth.Commands.Login;
+using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
@@ -12,15 +13,18 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RefreshTokenCommandHandler(
             IRefreshTokenRepository refreshTokenRepository, 
             ITokenService tokenService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IUnitOfWork unitOfWork)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<AuthResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -53,7 +57,7 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             };
 
             await _refreshTokenRepository.AddAsync(newRefreshTokenEntity, cancellationToken);
-            await _refreshTokenRepository.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return new AuthResult(newAccessToken, newRefreshToken);
         }
