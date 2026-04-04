@@ -1,18 +1,20 @@
-# 
 services:
   farola-api:
     build: .
     container_name: farola-api
     ports:
-      - "5000:80"      # Сопоставляет порт 5000 хоста с портом 80 контейнера
-      - "5001:443"     # Для HTTPS (если настроен)
+      - "5000:80"
+      - "5001:443"
     depends_on:
       postgres-db:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=Farola;Username=postgres;Password=FarolaPassword123;Include Error Detail=true
+      - ConnectionStrings__Redis=redis:6379
 
   postgres-db:
     image: postgres:16
@@ -30,6 +32,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:alpine
+    container_name: farola-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
-  
+  redis_data:

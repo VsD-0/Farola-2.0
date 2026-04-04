@@ -10,15 +10,18 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IRoleRepository _roleRepository;
+        private readonly IRoleCacheService _roleCacheService;
 
         public CreateUserCommandHandler(
             IUserRepository userRepository, 
             IPasswordHasher passwordHasher,
-            IRoleRepository roleRepository)
+            IRoleRepository roleRepository,
+            IRoleCacheService roleCacheService)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _roleRepository = roleRepository;
+            _roleCacheService = roleCacheService;
         }
 
         public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -26,7 +29,7 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
             if (await _userRepository.EmailExistsAsync(request.Email))
                 throw new InvalidOperationException("Email already exists");
 
-            var clientRole = await _roleRepository.GetByNameAsync("Client", cancellationToken);
+            var clientRole = await _roleCacheService.GetRoleByNameAsync("Client", cancellationToken);
             if (clientRole == null)
                 throw new InvalidOperationException("Role 'Client' not found. Ensure roles are seeded.");
 

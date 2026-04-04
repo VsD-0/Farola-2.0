@@ -34,6 +34,9 @@ namespace Farola.Infrastructure
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<DbSeeder>();
 
+            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<IRoleCacheService, RoleCacheService>();
+
             return services;
         }
     }
