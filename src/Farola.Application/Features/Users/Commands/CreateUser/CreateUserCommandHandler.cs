@@ -1,4 +1,5 @@
 ﻿using Farola.Domain.Entities;
+using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
@@ -9,19 +10,19 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IRoleRepository _roleRepository;
         private readonly IRoleCacheService _roleCacheService;
+        private readonly IUnitOfWork _unitOfWork;
 
         public CreateUserCommandHandler(
             IUserRepository userRepository, 
             IPasswordHasher passwordHasher,
-            IRoleRepository roleRepository,
-            IRoleCacheService roleCacheService)
+            IRoleCacheService roleCacheService,
+            IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
-            _roleRepository = roleRepository;
             _roleCacheService = roleCacheService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -55,6 +56,8 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
             };
 
             await _userRepository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             return user.Id;
         }
     }

@@ -1,0 +1,20 @@
+name: Farola Dev
+values:
+  - key: baseUrl
+    value: ''
+    enabled: true
+  - key: deviceId
+    value: ''
+    enabled: true
+  - key: userId
+    value: ''
+    enabled: true
+  - key: accessToken
+    value: ''
+    enabled: true
+  - key: refreshToken
+    value: ''
+    enabled: true
+  - key: password
+    value: ''
+    enabled: true

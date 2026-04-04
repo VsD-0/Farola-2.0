@@ -1,0 +1,22 @@
+$kind: http-request
+name: Revoke Session
+method: POST
+url: "{{baseUrl}}/api/sessions/revoke"
+scripts:
+  - type: afterResponse
+    code: "pm.environment.unset(\"accessToken\");\r
+
+      pm.environment.unset(\"refreshToken\");"
+    language: text/javascript
+order: 2000
+headers:
+  Authorization: Bearer {{accessToken}}
+  X-Device-Id: "{{deviceId}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "deviceId": "{{deviceId}}",
+      "password": "{{password}}"
+    }

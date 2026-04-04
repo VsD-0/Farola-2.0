@@ -18,6 +18,7 @@ namespace Farola.Infrastructure.Data.Repositories
         {
             return await _context.RefreshTokens
                 .Include(rt => rt.User)
+                .ThenInclude(u => u.Role)
                 .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
         }
 

@@ -1,0 +1,28 @@
+$kind: http-request
+name: Login
+method: POST
+url: "{{baseUrl}}/api/auth/login"
+scripts:
+  - type: afterResponse
+    code: "const response = pm.response.json();\r
+
+      if (response.accessToken && response.refreshToken) {\r
+
+      \    pm.environment.set(\"accessToken\", response.accessToken);\r
+
+      \    pm.environment.set(\"refreshToken\", response.refreshToken);\r
+
+      }"
+    language: text/javascript
+order: 1000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "newuser@example.com",
+      "password": "password123",
+      "deviceId": "{{deviceId}}",
+      "deviceName": "My Device"
+    }

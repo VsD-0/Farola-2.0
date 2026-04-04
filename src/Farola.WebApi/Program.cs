@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using Farola.Application;
 using Farola.Infrastructure;
 using Farola.Infrastructure.Data;
@@ -18,6 +19,10 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<GlobalExceptionFilter>();
     options.Filters.Add<DeviceIdValidationFilter>();
 });
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -108,9 +113,11 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
+app.UseIpRateLimiting();
 
 app.UseAuthentication();
 app.UseAuthorization();
