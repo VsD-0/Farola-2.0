@@ -2,9 +2,6 @@ services:
   farola-api:
     build: .
     container_name: farola-api
-    ports:
-      - "5000:80"
-      - "5001:443"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -15,6 +12,9 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=Farola;Username=postgres;Password=FarolaPassword123;Include Error Detail=true
       - ConnectionStrings__Redis=redis:6379
+    # Добавить сеть
+    networks:
+      - farola-network
 
   postgres-db:
     image: postgres:16
@@ -31,6 +31,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - farola-network
 
   redis:
     image: redis:alpine
@@ -45,6 +47,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - farola-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: farola-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - farola-api
+    networks:
+      - farola-network
+
+networks:
+  farola-network:
+    driver: bridge
 
 volumes:
   postgres_data:

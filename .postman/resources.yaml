@@ -2,6 +2,14 @@
 workspace:
   id: 5bad80ba-88a5-4d60-91f9-85c82bac4cb2
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  environments:
+    ..\postman\environments\Farola Dev.environment.yaml: c18d312b-489f-41ee-a4cd-6fe9611062e4
+  collections:
+    ..\postman\collections\Farola API: 23217236-0ff3ec9a-91b7-4420-bd6e-fba8cc3d1a15
+
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
 #localResources:

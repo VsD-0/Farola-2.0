@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Farola.Application.Features.Auth.Commands.Login
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResult>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, AccessTokenResult>
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
@@ -32,7 +32,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuthResult> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<AccessTokenResult> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
@@ -50,13 +50,21 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 IsRevoked = false,
                 DeviceId = request.DeviceId,
                 DeviceName = request.DeviceName,
-                IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString()
+                IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty
             };
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new AuthResult(accessToken, refreshToken);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
+            return new AccessTokenResult(accessToken);
         }
     }
 }

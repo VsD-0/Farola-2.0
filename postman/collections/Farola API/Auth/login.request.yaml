@@ -6,11 +6,13 @@ scripts:
   - type: afterResponse
     code: "const response = pm.response.json();\r
 
-      if (response.accessToken && response.refreshToken) {\r
+      if (response.accessToken) {\r
 
       \    pm.environment.set(\"accessToken\", response.accessToken);\r
 
-      \    pm.environment.set(\"refreshToken\", response.refreshToken);\r
+      \    console.log(\"accessToken\");\r
+
+      \    console.log(pm.environment.get(\"accessToken\"));\r
 
       }"
     language: text/javascript

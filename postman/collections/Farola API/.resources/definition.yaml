@@ -1,6 +1,6 @@
 $kind: collection
 name: Farola API
 auth:
-  - id: 4b3a96e1-9885-4705-86f2-3699326474d0
-    type: bearer
-    name: Bearer Token
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"

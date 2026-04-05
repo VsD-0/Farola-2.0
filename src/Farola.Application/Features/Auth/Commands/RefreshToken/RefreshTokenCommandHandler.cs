@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Farola.Application.Features.Auth.Commands.RefreshToken
 {
-    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, AuthResult>
+    public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, AccessTokenResult>
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly ITokenService _tokenService;
@@ -27,9 +27,13 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuthResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+        public async Task<AccessTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            var storedToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
+            var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
+                throw new UnauthorizedAccessException("Refresh token not found");
+
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken, cancellationToken);
             if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
@@ -51,15 +55,23 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
                 IsRevoked = false,
                 DeviceId = storedToken.DeviceId,
                 DeviceName = storedToken.DeviceName,
-                IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString(),
+                IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty,
                 LastUsedAt = DateTime.UtcNow
             };
 
             await _refreshTokenRepository.AddAsync(newRefreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return new AuthResult(newAccessToken, newRefreshToken);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
+            return new AccessTokenResult(newAccessToken);
         }
     }
 }

@@ -18,14 +18,14 @@ namespace Farola.WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResult>> Login(LoginCommand command)
+        public async Task<ActionResult<AccessTokenResult>> Login(LoginCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);
         }
 
         [HttpPost("refresh")]
-        public async Task<ActionResult<AuthResult>> Refresh(RefreshTokenCommand command)
+        public async Task<ActionResult<AccessTokenResult>> Refresh(RefreshTokenCommand command)
         {
             var result = await _mediator.Send(command);
             return Ok(result);
