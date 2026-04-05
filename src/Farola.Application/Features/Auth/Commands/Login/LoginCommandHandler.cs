@@ -56,12 +56,19 @@ namespace Farola.Application.Features.Auth.Commands.Login
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            var isHttps = _httpContextAccessor.HttpContext?.Request.IsHttps ?? false;
+            var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;
+            var secure = isHttps;
+
+            Console.WriteLine($"Setting cookie: isHttps={isHttps}, secure={secure}, sameSite={sameSite}");
+
             _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(7)
+                Secure = secure,
+                SameSite = sameSite,
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Path = "/"
             });
 
             return new AccessTokenResult(accessToken);

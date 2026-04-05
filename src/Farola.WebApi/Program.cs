@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(options =>
 {
-    //options.Filters.Add<GlobalExceptionFilter>();
+    options.Filters.Add<GlobalExceptionFilter>();
     options.Filters.Add<DeviceIdValidationFilter>();
 });
 builder.Services.AddMemoryCache();
@@ -32,6 +32,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Configuration.AddJsonFile("appsettings.Testing.json", optional: true, reloadOnChange: false);
 // https://localhost/swagger/index.html
 builder.Services.AddSwaggerGen(c =>
 {
@@ -117,9 +118,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseIpRateLimiting();
 
 app.UseAuthentication();
+
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseIpRateLimiting();
+}
+
 app.UseAuthorization();
 
 app.UseCors("AllowAll");

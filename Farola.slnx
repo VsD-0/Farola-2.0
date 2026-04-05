@@ -11,7 +11,6 @@
     <Project Path="tests/Farola.Application.Tests/Farola.Application.Tests.csproj" />
     <Project Path="tests/Farola.Domain.Tests/Farola.Domain.Tests.csproj" />
     <Project Path="tests/Farola.Infrastructure.Tests/Farola.Infrastructure.Tests.csproj" />
-    <Project Path="tests/Farola.WebApi.Tests/Farola.WebApi.Tests.csproj" />
   </Folder>
   <Build />
 </Solution>

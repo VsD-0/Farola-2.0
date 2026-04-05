@@ -1,5 +1,4 @@
 ﻿using Farola.Application.Common.Models;
-using Farola.Application.Features.Auth.Commands.Login;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
@@ -29,11 +28,13 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
 
         public async Task<AccessTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
-            if (string.IsNullOrEmpty(refreshToken))
+            var cookies = _httpContextAccessor.HttpContext.Request.Cookies;
+            if (!cookies.ContainsKey("refreshToken") || string.IsNullOrEmpty(cookies["refreshToken"]))
                 throw new UnauthorizedAccessException("Refresh token not found");
-
+            var refreshToken = cookies["refreshToken"];
+            Console.WriteLine($"Refresh token from cookie: {refreshToken}");
             var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken, cancellationToken);
+            Console.WriteLine($"Stored token found: {storedToken != null}");
             if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
@@ -63,12 +64,19 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             await _refreshTokenRepository.AddAsync(newRefreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+            var isHttps = _httpContextAccessor.HttpContext?.Request.IsHttps ?? false;
+            var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;
+            var secure = isHttps;
+
+            Console.WriteLine($"Setting cookie: isHttps={isHttps}, secure={secure}, sameSite={sameSite}");
+
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(7)
+                Secure = secure,
+                SameSite = sameSite,
+                Expires = DateTimeOffset.UtcNow.AddDays(7),
+                Path = "/"
             });
 
             return new AccessTokenResult(newAccessToken);

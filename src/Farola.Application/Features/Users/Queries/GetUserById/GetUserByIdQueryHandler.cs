@@ -16,10 +16,7 @@ namespace Farola.Application.Features.Users.Queries.GetUserById
 
         public async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetByIdAsync(request.Id);
-            if (user == null)
-                throw new NotFoundException($"User with id {request.Id} not found");
-            return user;
+            return await _userRepository.GetByIdAsync(request.Id);
         }
     }
 }

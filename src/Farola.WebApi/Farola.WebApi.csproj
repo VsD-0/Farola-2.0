@@ -31,4 +31,8 @@
     <ProjectReference Include="..\Farola.Shared\Farola.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Farola.WebApi.Tests" />
+  </ItemGroup>
+
 </Project>
