@@ -1,4 +1,4 @@
-﻿using Farola.Application.DTOs.Sessions.Sessions;
+﻿using Farola.Application.DTOs.Sessions;
 using Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions;
 using Farola.Application.Features.Sessions.Commands.RevokeSession;
 using Farola.Application.Features.Sessions.Queries.GetSessions;

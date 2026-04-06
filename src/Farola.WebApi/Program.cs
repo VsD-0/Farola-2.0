@@ -7,6 +7,7 @@ using Farola.Infrastructure.Data.Configurations;
 using Farola.Infrastructure.Services;
 using Farola.WebApi.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -135,11 +136,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<FarolaDbContext>();
     db.Database.Migrate();
 
-    if (app.Environment.IsDevelopment())
-    {
-        var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
-        await seeder.SeedAsync(db);
-    }
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await seeder.SeedAsync(db);
 }
 
 if (app.Environment.IsDevelopment())
@@ -149,6 +147,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseAuthentication();
 
@@ -163,7 +166,7 @@ app.UseCors("AllowAll");
 
 app.MapControllers();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

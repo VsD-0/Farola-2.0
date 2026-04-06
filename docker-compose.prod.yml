@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  farola-api:
+    build:
+      context: .
+      dockerfile: src/Farola.WebApi/Dockerfile
+    container_name: farola-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=Farola;Username=postgres;Password=${DB_PASSWORD}
+      - ConnectionStrings__Redis=redis:6379
+      - JwtSettings__Secret=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - farola-network
+
+  postgres:
+    image: postgres:15
+    container_name: farola-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: Farola
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - farola-network
+
+  redis:
+    image: redis:alpine
+    container_name: farola-redis
+    restart: unless-stopped
+    networks:
+      - farola-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: farola-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - farola-api
+    networks:
+      - farola-network
+
+networks:
+  farola-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
