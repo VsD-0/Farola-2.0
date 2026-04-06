@@ -1,9 +1,11 @@
 ﻿using Farola.Application.Features.Auth.Commands.Login;
+using Farola.Application.Features.Sessions.Queries.GetSessions;
 using Farola.Domain.Entities;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Farola.Application.Tests.Features.Auth.Commands.Login
@@ -17,6 +19,7 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
         private readonly Mock<IUnitOfWork> _unitOfWork = new();
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly LoginCommandHandler _handler;
+        private readonly Mock<ILogger<LoginCommandHandler>> _loggerMock = new();
 
         public LoginCommandHandlerTests()
         {
@@ -26,7 +29,8 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
                 _refreshTokenRepo.Object,
                 _hasher.Object,
                 _httpContextAccessor.Object,
-                _unitOfWork.Object);
+                _unitOfWork.Object,
+                _loggerMock.Object);
         }
 
         [Fact]

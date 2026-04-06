@@ -36,8 +36,6 @@ namespace Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions
 
         public async Task Handle(RevokeAllOtherSessionsCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("User {UserId} requested to revoke all other sessions", userId);
-
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
                 throw new UnauthorizedAccessException("User not authenticated");
