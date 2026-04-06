@@ -16,19 +16,22 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<RefreshTokenCommandHandler> _logger;
+        private readonly IDeviceFingerprintService _fingerprintService;
 
         public RefreshTokenCommandHandler(
             IRefreshTokenRepository refreshTokenRepository, 
             ITokenService tokenService,
             IHttpContextAccessor httpContextAccessor,
             IUnitOfWork unitOfWork,
-            ILogger<RefreshTokenCommandHandler> logger)
+            ILogger<RefreshTokenCommandHandler> logger,
+            IDeviceFingerprintService fingerprintService)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _fingerprintService = fingerprintService;
         }
 
         public async Task<AccessTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -42,6 +45,9 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             Console.WriteLine($"Stored token found: {storedToken != null}");
             if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiresAt < DateTime.UtcNow)
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
+            var currentFingerprint = _fingerprintService.ComputeFingerprint(storedToken.DeviceId, storedToken.UserAgent);
+            if (storedToken.DeviceFingerprint != currentFingerprint)
+                throw new UnauthorizedAccessException("Device fingerprint mismatch");
 
             var user = storedToken.User;
 
@@ -65,7 +71,8 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
                 DeviceName = storedToken.DeviceName,
                 IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty,
-                LastUsedAt = DateTime.UtcNow
+                LastUsedAt = DateTime.UtcNow,
+                DeviceFingerprint = currentFingerprint
             };
 
             await _refreshTokenRepository.AddAsync(newRefreshTokenEntity, cancellationToken);

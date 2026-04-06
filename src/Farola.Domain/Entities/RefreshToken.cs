@@ -14,5 +14,6 @@
         public string UserAgent { get; set; } = string.Empty;
         public DateTime? LastUsedAt { get; set; }
         public virtual User User { get; set; } = null!;
+        public string? DeviceFingerprint { get; set; }
     }
 }

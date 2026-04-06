@@ -17,6 +17,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<LoginCommandHandler> _logger;
+        private readonly IDeviceFingerprintService _deviceFingerprintService;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
@@ -25,7 +26,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
             IPasswordHasher passwordHasher,
             IHttpContextAccessor httpContextAccessor,
             IUnitOfWork unitOfWork,
-            ILogger<LoginCommandHandler> logger)
+            ILogger<LoginCommandHandler> logger,
+            IDeviceFingerprintService deviceFingerprintService)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -34,6 +36,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _deviceFingerprintService = deviceFingerprintService;
         }
 
         public async Task<AccessTokenResult> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -50,6 +53,10 @@ namespace Farola.Application.Features.Auth.Commands.Login
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
+            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty;
+            
+            var fingerprint = _deviceFingerprintService.ComputeFingerprint(request.DeviceId, userAgent);
+
             var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
                 Token = refreshToken,
@@ -60,7 +67,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 DeviceId = request.DeviceId,
                 DeviceName = request.DeviceName,
                 IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty
+                UserAgent = userAgent,
+                DeviceFingerprint = fingerprint
             };
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
