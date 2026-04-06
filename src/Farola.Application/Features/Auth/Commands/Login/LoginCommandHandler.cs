@@ -73,6 +73,23 @@ namespace Farola.Application.Features.Auth.Commands.Login
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            const int maxActiveSessions = 10;
+            var activeTokens = await _refreshTokenRepository.GetActiveByUserIdAsync(user.Id, cancellationToken);
+            if (activeTokens.Count > maxActiveSessions)
+            {
+                var tokensToRevoke = activeTokens
+                    .OrderBy(t => t.CreatedAt)
+                    .Take(activeTokens.Count - maxActiveSessions)
+                    .ToList();
+                foreach (var token in tokensToRevoke)
+                {
+                    token.IsRevoked = true;
+                    await _refreshTokenRepository.UpdateAsync(token, cancellationToken);
+                }
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Revoked {Count} old sessions for user {UserId}", tokensToRevoke.Count, user.Id);
+            }
+            
             var isHttps = _httpContextAccessor.HttpContext?.Request.IsHttps ?? false;
             var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;
             var secure = isHttps;
