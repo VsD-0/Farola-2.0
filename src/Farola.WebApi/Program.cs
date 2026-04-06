@@ -122,6 +122,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpClient("FarolaAPI", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001");
+    client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

@@ -6,6 +6,7 @@ using Farola.WebApi.Attributes;
 using Farola.WebApi.Examples.Sessions.GetSessions;
 using Farola.WebApi.Examples.Sessions.Revoke;
 using Farola.WebApi.Examples.Sessions.RevokeAllOtherSessions;
+using Farola.WebApi.Filters;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,6 +66,7 @@ namespace Farola.WebApi.Controllers
         /// <response code="401">Неверный пароль или пользователь не авторизован.</response>
         /// <response code="404">Сессия с указанным DeviceId не найдена.</response>
         [HttpPost("revoke")]
+        [ValidateAjax]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -88,6 +90,7 @@ namespace Farola.WebApi.Controllers
         /// <response code="400">Неверный запрос (отсутствует пароль).</response>
         /// <response code="401">Неверный пароль или пользователь не авторизован.</response>
         [HttpPost("revoke-all")]
+        [ValidateAjax]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
