@@ -20,6 +20,7 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly LoginCommandHandler _handler;
         private readonly Mock<ILogger<LoginCommandHandler>> _loggerMock = new();
+        private readonly Mock<IDeviceFingerprintService> _fingerprintServiceMock = new();
 
         public LoginCommandHandlerTests()
         {
@@ -30,7 +31,8 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
                 _hasher.Object,
                 _httpContextAccessor.Object,
                 _unitOfWork.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _fingerprintServiceMock.Object);
         }
 
         [Fact]
