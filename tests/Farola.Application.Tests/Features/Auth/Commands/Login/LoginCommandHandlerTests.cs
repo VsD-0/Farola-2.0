@@ -1,11 +1,13 @@
 ﻿using Farola.Application.Features.Auth.Commands.Login;
 using Farola.Application.Features.Sessions.Queries.GetSessions;
+using Farola.Domain.Configuration;
 using Farola.Domain.Entities;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Farola.Application.Tests.Features.Auth.Commands.Login
@@ -21,9 +23,16 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
         private readonly LoginCommandHandler _handler;
         private readonly Mock<ILogger<LoginCommandHandler>> _loggerMock = new();
         private readonly Mock<IDeviceFingerprintService> _fingerprintServiceMock = new();
+        private readonly Mock<IOptions<SecuritySettings>> _securitySettingsMock = new();
 
         public LoginCommandHandlerTests()
         {
+            var securitySettings = new SecuritySettings { MaxActiveSessions = 10 };
+            _securitySettingsMock.Setup(x => x.Value).Returns(securitySettings);
+
+            _fingerprintServiceMock.Setup(x => x.ComputeFingerprint(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns("test-fingerprint");
+
             _handler = new LoginCommandHandler(
                 _userRepo.Object,
                 _tokenService.Object,
@@ -32,7 +41,8 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
                 _httpContextAccessor.Object,
                 _unitOfWork.Object,
                 _loggerMock.Object,
-                _fingerprintServiceMock.Object);
+                _fingerprintServiceMock.Object,
+                _securitySettingsMock.Object);
         }
 
         [Fact]
@@ -47,6 +57,11 @@ namespace Farola.Application.Tests.Features.Auth.Commands.Login
             _hasher.Setup(h => h.VerifyPassword(command.Password, user.Password)).Returns(true);
             _tokenService.Setup(t => t.GenerateAccessToken(user)).Returns("access_token");
             _tokenService.Setup(t => t.GenerateRefreshToken()).Returns("refresh_token");
+            
+            _fingerprintServiceMock.Setup(f => f.ComputeFingerprint(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns("test-fingerprint");
+            _refreshTokenRepo.Setup(r => r.GetActiveByUserIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Domain.Entities.RefreshToken>());
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Headers["User-Agent"] = "TestAgent";
