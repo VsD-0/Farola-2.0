@@ -1,4 +1,5 @@
-﻿using Farola.Application.Features.Users.Commands.CreateUser;
+﻿using Farola.Application.DTOs.Users;
+using Farola.Application.Features.Users.Commands.CreateUser;
 using Farola.Application.Features.Users.Queries.GetUserById;
 using Farola.Domain.Entities;
 using Farola.WebApi.Examples.Sessions.GetSessions;
@@ -53,7 +54,7 @@ namespace Farola.WebApi.Controllers
         /// <response code="401">Не авторизован.</response>
         /// <response code="404">Пользователь с указанным ID не найден.</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(GetUserResponseExample))]

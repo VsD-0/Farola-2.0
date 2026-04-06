@@ -21,7 +21,19 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
             // Arrange
             var userId = 5;
             var query = new GetUserByIdQuery(userId);
-            var user = new User { Id = userId, Name = "Test", Email = "test@example.com" };
+            var role = new Role { Id = 1, Name = "Client" };
+            var user = new User
+            {
+                Id = userId,
+                Name = "Test",
+                Email = "test@example.com",
+                Surname = "TestSurname",
+                PhoneNumber = "+123456789",
+                Role = role,
+                RoleId = role.Id,
+                DateRegistration = DateTime.UtcNow,
+                IsClosed = false
+            };
             _userRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
             // Act
@@ -30,6 +42,9 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
             // Assert
             Assert.NotNull(result);
             Assert.Equal(userId, result.Id);
+            Assert.Equal("Test", result.Name);
+            Assert.Equal("test@example.com", result.Email);
+            Assert.Equal("Client", result.RoleName);
         }
 
         [Fact]
