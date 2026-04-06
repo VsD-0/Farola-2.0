@@ -21,6 +21,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore dependencies
         run: dotnet restore Farola.slnx
 
@@ -28,10 +36,24 @@ jobs:
         run: dotnet build Farola.slnx --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test Farola.slnx --no-build --configuration Release --verbosity normal
+        run: dotnet test Farola.slnx --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
-      - name: Docker Build (without push)
-        run: docker build -f src/Farola.WebApi/Dockerfile -t farola-api:test .
+      - name: Upload test results as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: '**/*.trx'
+
+      - name: Docker Build (with cache)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: src/Farola.WebApi/Dockerfile
+          push: false
+          tags: farola-api:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   push-to-registry:
     needs: build-and-test
@@ -50,7 +72,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (with cache)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -59,3 +81,35 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/farola-api:latest
             ${{ secrets.DOCKER_USERNAME }}/farola-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Send Telegram notification on success
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ Farola API build and push succeeded!
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Image: ${{ secrets.DOCKER_USERNAME }}/farola-api:latest
+
+  notify-failure:
+    needs: [build-and-test, push-to-registry]
+    if: failure() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram notification on failure
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ Farola API build failed!
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Check the logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
