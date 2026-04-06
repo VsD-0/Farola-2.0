@@ -34,7 +34,8 @@ namespace Farola.Application.Features.Users.Queries.GetUserById
                 DateRegistration = user.DateRegistration,
                 Profession = user.Profession,
                 IsClosed = user.IsClosed,
-                RoleId = user.RoleId
+                RoleId = user.RoleId,
+                RoleName = user.Role?.Name ?? string.Empty
             };
         }
     }
