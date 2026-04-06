@@ -1,7 +1,9 @@
-﻿using Farola.Application.Features.Sessions.Queries.GetSessions;
+﻿using Farola.Application.Features.Auth.Commands.RefreshToken;
+using Farola.Application.Features.Sessions.Queries.GetSessions;
 using Farola.Domain.Entities;
 using Farola.Domain.Interfaces.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 
@@ -12,10 +14,14 @@ namespace Farola.Application.Tests.Features.Sessions.Queries.GetSessions
         private readonly Mock<IRefreshTokenRepository> _refreshTokenRepo = new();
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly GetSessionsQueryHandler _handler;
+        private readonly Mock<ILogger<GetSessionsQueryHandler>> _loggerMock = new();
 
         public GetSessionsQueryHandlerTests()
         {
-            _handler = new GetSessionsQueryHandler(_refreshTokenRepo.Object, _httpContextAccessor.Object);
+            _handler = new GetSessionsQueryHandler(
+                _refreshTokenRepo.Object, 
+                _httpContextAccessor.Object, 
+                _loggerMock.Object);
         }
 
         [Fact]

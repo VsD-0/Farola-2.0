@@ -2,8 +2,9 @@
 using Farola.Domain.Entities;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
-using Microsoft.AspNetCore.Http;
 using Farola.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 
@@ -17,6 +18,7 @@ namespace Farola.Application.Tests.Features.Sessions.Commands.RevokeAllOtherSess
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly Mock<IUnitOfWork> _unitOfWork = new();
         private readonly RevokeAllOtherSessionsCommandHandler _handler;
+        private readonly Mock<ILogger<RevokeAllOtherSessionsCommandHandler>> _loggerMock = new();
 
         public RevokeAllOtherSessionsCommandHandlerTests()
         {
@@ -25,7 +27,8 @@ namespace Farola.Application.Tests.Features.Sessions.Commands.RevokeAllOtherSess
                 _userRepo.Object,
                 _passwordHasher.Object,
                 _httpContextAccessor.Object,
-                _unitOfWork.Object);
+                _unitOfWork.Object,
+                _loggerMock.Object);
         }
 
         [Fact]

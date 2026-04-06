@@ -1,10 +1,12 @@
-﻿using Farola.Application.Features.Auth.Commands.RefreshToken;
+﻿using Farola.Application.Features.Auth.Commands.Login;
+using Farola.Application.Features.Auth.Commands.RefreshToken;
 using Farola.Application.Features.Sessions.Commands.RevokeSession;
 using Farola.Domain.Entities;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Security.Claims;
 
@@ -17,6 +19,7 @@ namespace Farola.Application.Tests.Features.Sessions.Commands.RevokeSession
         private readonly Mock<IUnitOfWork> _unitOfWork = new();
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly RefreshTokenCommandHandler _handler;
+        private readonly Mock<ILogger<RefreshTokenCommandHandler>> _loggerMock = new();
 
         public RefreshTokenCommandHandlerTests()
         {
@@ -24,7 +27,8 @@ namespace Farola.Application.Tests.Features.Sessions.Commands.RevokeSession
                 _refreshTokenRepo.Object,
                 _tokenService.Object,
                 _httpContextAccessor.Object,
-                _unitOfWork.Object);
+                _unitOfWork.Object,
+                _loggerMock.Object);
         }
 
         [Fact]
