@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using Farola.Application;
+using Farola.Domain.Configuration;
 using Farola.Infrastructure;
 using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
@@ -84,6 +85,8 @@ if (jwtSettings == null)
     throw new InvalidOperationException("JwtSettings section is missing in configuration.");
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton(jwtSettings);
+
+builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("SecuritySettings"));
 
 builder.Services.AddAuthentication(options =>
 {
