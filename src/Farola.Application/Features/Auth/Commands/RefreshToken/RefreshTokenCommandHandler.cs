@@ -1,9 +1,11 @@
 ﻿using Farola.Application.Common.Models;
+using Farola.Application.Features.Auth.Commands.Login;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Farola.Application.Features.Auth.Commands.RefreshToken
 {
@@ -13,17 +15,20 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<RefreshTokenCommandHandler> _logger;
 
         public RefreshTokenCommandHandler(
             IRefreshTokenRepository refreshTokenRepository, 
             ITokenService tokenService,
             IHttpContextAccessor httpContextAccessor,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ILogger<RefreshTokenCommandHandler> logger)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<AccessTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -39,6 +44,8 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
             var user = storedToken.User;
+
+            _logger.LogInformation("Refresh token attempt for user {UserId}", user.Id);
 
             storedToken.IsRevoked = true;
             storedToken.LastUsedAt = DateTime.UtcNow;
@@ -68,9 +75,7 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
             var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;
             var secure = isHttps;
 
-            Console.WriteLine($"Setting cookie: isHttps={isHttps}, secure={secure}, sameSite={sameSite}");
-
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = secure,
@@ -78,6 +83,8 @@ namespace Farola.Application.Features.Auth.Commands.RefreshToken
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 Path = "/"
             });
+
+            _logger.LogInformation("Refresh token rotated for user {UserId}", user.Id);
 
             return new AccessTokenResult(newAccessToken);
         }

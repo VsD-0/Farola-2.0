@@ -3,6 +3,7 @@ using Farola.Domain.Interfaces.Repositories;
 using MediatR;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Farola.Application.Features.Sessions.Queries.GetSessions
 {
@@ -10,13 +11,16 @@ namespace Farola.Application.Features.Sessions.Queries.GetSessions
     {
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<GetSessionsQueryHandler> _logger;
 
         public GetSessionsQueryHandler(
             IRefreshTokenRepository refreshTokenRepository,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<GetSessionsQueryHandler> logger)
         {
             _refreshTokenRepository = refreshTokenRepository;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public async Task<List<SessionDto>> Handle(GetSessionsQuery request, CancellationToken cancellationToken)
@@ -24,6 +28,8 @@ namespace Farola.Application.Features.Sessions.Queries.GetSessions
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdClaim, out var userId))
                 throw new UnauthorizedAccessException("User not authenticated");
+
+            _logger.LogDebug("User {UserId} requested list of active sessions", userId);
 
             var tokens = await _refreshTokenRepository.GetActiveByUserIdAsync(userId, cancellationToken);
             var sorted = tokens.OrderByDescending(t => t.LastUsedAt ?? t.CreatedAt).ToList();

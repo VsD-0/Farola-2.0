@@ -4,6 +4,7 @@ using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Farola.Application.Features.Auth.Commands.Login
 {
@@ -15,6 +16,7 @@ namespace Farola.Application.Features.Auth.Commands.Login
         private readonly IPasswordHasher _passwordHasher;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<LoginCommandHandler> _logger;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
@@ -22,7 +24,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
             IRefreshTokenRepository refreshTokenRepository,
             IPasswordHasher passwordHasher,
             IHttpContextAccessor httpContextAccessor,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ILogger<LoginCommandHandler> logger)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -30,13 +33,19 @@ namespace Farola.Application.Features.Auth.Commands.Login
             _passwordHasher = passwordHasher;
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<AccessTokenResult> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Login attempt for email {Email}", request.Email);
+
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
+            {
+                _logger.LogWarning("Failed login for email {Email}", request.Email);
                 throw new UnauthorizedAccessException("Invalid credentials");
+            }
 
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -60,8 +69,6 @@ namespace Farola.Application.Features.Auth.Commands.Login
             var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;
             var secure = isHttps;
 
-            Console.WriteLine($"Setting cookie: isHttps={isHttps}, secure={secure}, sameSite={sameSite}");
-
             _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -70,6 +77,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 Path = "/"
             });
+
+            _logger.LogInformation("User {UserId} logged in successfully", user.Id);
 
             return new AccessTokenResult(accessToken);
         }
