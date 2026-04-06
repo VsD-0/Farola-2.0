@@ -1,7 +1,7 @@
 ﻿using Farola.Application.Features.Sessions.Queries.GetSessions;
 using FluentValidation.TestHelper;
 
-namespace Farola.Application.Tests.Validators
+namespace Farola.Application.Tests.Features.Sessions.Queries.GetSessions
 {
     public class GetSessionsQueryValidatorTests
     {

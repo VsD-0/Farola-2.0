@@ -1,7 +1,7 @@
 ﻿using Farola.Application.Features.Users.Commands.CreateUser;
 using FluentValidation.TestHelper;
 
-namespace Farola.Application.Tests.Validators
+namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
 {
     public class CreateUserCommandValidatorTests
     {
