@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using StackExchange.Redis;
-using System.Text;
 using Serilog;
+using StackExchange.Redis;
+using Swashbuckle.AspNetCore.Filters;
+using System.Reflection;
+using System.Text;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -47,8 +49,19 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Farola API",
-        Version = "v1"
+        Version = "v1",
+        Description = "API для платформы Farola – обмен услугами между клиентами и профессионалами.",
+        Contact = new OpenApiContact
+        {
+            Name = "Support",
+            Email = "vsdmitri@gmail.com"
+        }
     });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    c.ExampleFilters();
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -64,6 +77,7 @@ builder.Services.AddSwaggerGen(c =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
+builder.Services.AddSwaggerExamplesFromAssemblyOf<Program>();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 if (jwtSettings == null)
