@@ -79,8 +79,8 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
             var command = new CreateUserCommand("new@example.com", "pass", "Doe", "John", "+123", 999);
             _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
                 .ReturnsAsync(false);
-            _roleCache.Setup(r => r.GetRoleByIdAsync(command.RoleId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Role { Id = (int)RoleType.Client, Name = RoleNames.Client });
+            _roleCache.Setup(r => r.GetRoleByIdAsync(999, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Role?)null);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
             _userRepo.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
