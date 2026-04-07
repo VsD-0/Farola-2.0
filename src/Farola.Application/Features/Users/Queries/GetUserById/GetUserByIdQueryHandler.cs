@@ -1,4 +1,5 @@
-﻿using Farola.Application.DTOs.Users;
+﻿using AutoMapper;
+using Farola.Application.DTOs.Users;
 using Farola.Domain.Interfaces.Repositories;
 using MediatR;
 
@@ -7,10 +8,14 @@ namespace Farola.Application.Features.Users.Queries.GetUserById
     public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public GetUserByIdQueryHandler(IUserRepository userRepository)
+        public GetUserByIdQueryHandler(
+            IUserRepository userRepository,
+            IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public async Task<UserDto?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
@@ -19,24 +24,7 @@ namespace Farola.Application.Features.Users.Queries.GetUserById
             if (user == null)
                 return null;
 
-            return new UserDto
-            {
-                Id = user.Id,
-                Surname = user.Surname,
-                Name = user.Name,
-                Patronymic = user.Patronymic,
-                PhoneNumber = user.PhoneNumber,
-                Email = user.Email,
-                Area = user.Area,
-                Information = user.Information,
-                SpecializationId = user.SpecializationId,
-                Photo = user.Photo,
-                DateRegistration = user.DateRegistration,
-                Profession = user.Profession,
-                IsClosed = user.IsClosed,
-                RoleId = user.RoleId,
-                RoleName = user.Role?.Name ?? string.Empty
-            };
+            return _mapper.Map<UserDto>(user);
         }
     }
 }
