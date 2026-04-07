@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Farola.Application.DTOs.Users;
 using Farola.Application.Features.Users.Queries.GetUserById;
 using Farola.Domain.Constants;
 using Farola.Domain.Entities;
@@ -26,19 +27,25 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
             var userId = 5;
             var query = new GetUserByIdQuery(userId);
             var role = new Role { Id = (int)RoleType.Client, Name = RoleNames.Client };
-            var user = new User
-            {
-                Id = userId,
-                Name = "Test",
-                Email = "test@example.com",
-                Surname = "TestSurname",
-                PhoneNumber = "+123456789",
-                Role = role,
-                RoleId = role.Id,
-                DateRegistration = DateTime.UtcNow,
-                IsClosed = false
-            };
-            _userRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+            _mapperMock.Setup(m => m.Map<UserDto>(It.IsAny<User>()))
+                .Returns((User src) => new UserDto
+                {
+                    Id = src.Id,
+                    Name = src.Name,
+                    Email = src.Email,
+                    Surname = src.Surname,
+                    PhoneNumber = src.PhoneNumber,
+                    RoleName = src.Role?.Name ?? string.Empty,
+                    RoleId = src.RoleId,
+                    DateRegistration = src.DateRegistration,
+                    IsClosed = src.IsClosed,
+                    Area = src.Area,
+                    Information = src.Information,
+                    SpecializationId = src.SpecializationId,
+                    Photo = src.Photo,
+                    Profession = src.Profession,
+                    Patronymic = src.Patronymic
+                });
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
