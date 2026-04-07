@@ -51,7 +51,7 @@ namespace Farola.Domain.Tests.Entities
                 RoleId = 1,
                 Surname = "Test",
                 Name = "User",
-                PhoneNumber = "123",
+                PhoneNumber = "+1234567890",
                 Email = "test@test.com",
                 Password = "hash",
                 DateRegistration = DateTime.UtcNow,
