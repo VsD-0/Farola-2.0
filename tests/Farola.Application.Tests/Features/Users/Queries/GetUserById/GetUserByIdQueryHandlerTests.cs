@@ -47,6 +47,20 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
                     Patronymic = src.Patronymic
                 });
 
+            var user = new User
+            {
+                Id = userId,
+                Name = "Test",
+                Email = "test@example.com",
+                Surname = "TestSurname",
+                PhoneNumber = "+123456789",
+                Role = role,
+                RoleId = role.Id,
+                DateRegistration = DateTime.UtcNow,
+                IsClosed = false
+            };
+            _userRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
