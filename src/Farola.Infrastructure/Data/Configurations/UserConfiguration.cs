@@ -1,4 +1,5 @@
 ﻿using Farola.Domain.Entities;
+using Farola.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -42,6 +43,18 @@ namespace Farola.Infrastructure.Data.Configurations
                 .HasForeignKey(u => u.SpecializationId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_user_specialization");
+
+            builder.Property(u => u.Email)
+                .HasConversion(
+                    email => email.Value,
+                    value => new Email(value))
+                .HasMaxLength(100);
+
+            builder.Property(u => u.PhoneNumber)
+                .HasConversion(
+                    phone => phone.Value,
+                    value => new PhoneNumber(value))
+                .HasMaxLength(20);
         }
     }
 }

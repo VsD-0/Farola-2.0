@@ -2,6 +2,7 @@
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
+using Farola.Domain.ValueObjects;
 using MediatR;
 
 namespace Farola.Application.Features.Users.Commands.CreateUser
@@ -39,18 +40,18 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
 
             var user = new User
             {
-                Email = request.Email,
-                Password = hashedPassword,
+                Email = new Email(request.Email),
+                PhoneNumber = new PhoneNumber(request.PhoneNumber),
+                Password = _passwordHasher.HashPassword(request.Password),
                 Surname = request.Surname,
                 Name = request.Name,
-                PhoneNumber = request.PhoneNumber,
-                RoleId = role.Id,
                 Patronymic = request.Patronymic,
-                Profession = request.Profession,
+                RoleId = request.RoleId,
                 Area = request.Area,
                 Information = request.Information,
                 SpecializationId = request.SpecializationId,
                 Photo = request.Photo,
+                Profession = request.Profession,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
             };

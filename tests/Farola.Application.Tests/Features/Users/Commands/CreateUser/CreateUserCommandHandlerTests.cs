@@ -5,6 +5,7 @@ using Farola.Domain.Enums;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
+using Farola.Domain.ValueObjects;
 using Moq;
 
 namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
@@ -30,11 +31,11 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
         public async Task Handle_ValidCommand_CreatesUser()
         {
             var command = new CreateUserCommand(
-                Email: "new@example.com",
+                Email: new Email("new@example.com"),
                 Password: "password123",
                 Surname: "Doe",
                 Name: "John",
-                PhoneNumber: "+1234567890",
+                PhoneNumber: new PhoneNumber("+1234567890"),
                 RoleId: 1,
                 Patronymic: null,
                 Profession: null,
@@ -47,7 +48,7 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
             var role = new Role { Id = 1, Name = "Client" };
             _roleCache.Setup(r => r.GetRoleByIdAsync(command.RoleId, It.IsAny<CancellationToken>()))
     .ReturnsAsync(new Role { Id = (int)RoleType.Client, Name = RoleNames.Client });
-            _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
+            _userRepo.Setup(r => r.EmailExistsAsync(new Email(command.Email)))
                 .ReturnsAsync(false);
             _hasher.Setup(h => h.HashPassword(command.Password)).Returns("hashed_password");
 
@@ -55,7 +56,7 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
 
             Assert.Equal(0, userId);
             _userRepo.Verify(r => r.AddAsync(It.Is<User>(u =>
-                u.Email == command.Email &&
+                u.Email == new Email(command.Email) &&
                 u.Password == "hashed_password" &&
                 u.RoleId == role.Id
             )), Times.Once);
@@ -66,7 +67,7 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
         public async Task Handle_EmailAlreadyExists_ThrowsInvalidOperationException()
         {
             var command = new CreateUserCommand("existing@example.com", "pass", "Doe", "John", "+123", 1);
-            _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
+            _userRepo.Setup(r => r.EmailExistsAsync(new Email(command.Email)))
                 .ReturnsAsync(true);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
@@ -77,7 +78,7 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
         public async Task Handle_RoleNotFound_ThrowsInvalidOperationException()
         {
             var command = new CreateUserCommand("new@example.com", "pass", "Doe", "John", "+123", 999);
-            _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
+            _userRepo.Setup(r => r.EmailExistsAsync(new Email(command.Email)))
                 .ReturnsAsync(false);
             _roleCache.Setup(r => r.GetRoleByIdAsync(999, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Role?)null);
