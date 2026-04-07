@@ -2,6 +2,7 @@
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
+using Farola.Domain.ValueObjects;
 using MediatR;
 
 namespace Farola.Application.Features.Users.Commands.CreateUser
@@ -30,27 +31,27 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
             if (await _userRepository.EmailExistsAsync(request.Email))
                 throw new InvalidOperationException("Email already exists");
 
-            var clientRole = await _roleCacheService.GetRoleByNameAsync("Client", cancellationToken);
-            if (clientRole == null)
-                throw new InvalidOperationException("Role 'Client' not found. Ensure roles are seeded.");
+            var role = await _roleCacheService.GetRoleByIdAsync(request.RoleId, cancellationToken);
+            if (role == null)
+                throw new InvalidOperationException($"Role with id {request.RoleId} not found.");
 
             var hashedPassword = _passwordHasher.HashPassword(request.Password);
 
 
             var user = new User
             {
-                Email = request.Email,
-                Password = hashedPassword,
+                Email = new Email(request.Email),
+                PhoneNumber = new PhoneNumber(request.PhoneNumber),
+                Password = _passwordHasher.HashPassword(request.Password),
                 Surname = request.Surname,
                 Name = request.Name,
-                PhoneNumber = request.PhoneNumber,
-                RoleId = clientRole.Id,
                 Patronymic = request.Patronymic,
-                Profession = request.Profession,
+                RoleId = request.RoleId,
                 Area = request.Area,
                 Information = request.Information,
                 SpecializationId = request.SpecializationId,
                 Photo = request.Photo,
+                Profession = request.Profession,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
             };

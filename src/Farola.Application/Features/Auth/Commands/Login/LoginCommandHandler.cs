@@ -1,10 +1,12 @@
 ﻿using Farola.Application.Common.Models;
+using Farola.Domain.Configuration;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Farola.Application.Features.Auth.Commands.Login
 {
@@ -17,6 +19,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<LoginCommandHandler> _logger;
+        private readonly IDeviceFingerprintService _deviceFingerprintService;
+        private readonly IOptions<SecuritySettings> _securitySettings;
 
         public LoginCommandHandler(
             IUserRepository userRepository,
@@ -25,7 +29,9 @@ namespace Farola.Application.Features.Auth.Commands.Login
             IPasswordHasher passwordHasher,
             IHttpContextAccessor httpContextAccessor,
             IUnitOfWork unitOfWork,
-            ILogger<LoginCommandHandler> logger)
+            ILogger<LoginCommandHandler> logger,
+            IDeviceFingerprintService deviceFingerprintService,
+            IOptions<SecuritySettings> securitySettings)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -34,6 +40,8 @@ namespace Farola.Application.Features.Auth.Commands.Login
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _deviceFingerprintService = deviceFingerprintService;
+            _securitySettings = securitySettings;
         }
 
         public async Task<AccessTokenResult> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -50,6 +58,10 @@ namespace Farola.Application.Features.Auth.Commands.Login
             var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
+            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty;
+            
+            var fingerprint = _deviceFingerprintService.ComputeFingerprint(request.DeviceId, userAgent);
+
             var refreshTokenEntity = new Domain.Entities.RefreshToken
             {
                 Token = refreshToken,
@@ -60,10 +72,26 @@ namespace Farola.Application.Features.Auth.Commands.Login
                 DeviceId = request.DeviceId,
                 DeviceName = request.DeviceName,
                 IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString() ?? string.Empty
+                UserAgent = userAgent,
+                DeviceFingerprint = fingerprint
             };
             await _refreshTokenRepository.AddAsync(refreshTokenEntity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var activeTokens = await _refreshTokenRepository.GetActiveByUserIdAsync(user.Id, cancellationToken);
+            if (activeTokens.Count > _securitySettings.Value.MaxActiveSessions)
+            {
+                var tokensToRevoke = activeTokens
+                    .OrderBy(t => t.CreatedAt)
+                    .Take(activeTokens.Count - _securitySettings.Value.MaxActiveSessions)
+                    .ToList();
+                foreach (var token in tokensToRevoke)
+                {
+                    token.IsRevoked = true;
+                    await _refreshTokenRepository.UpdateAsync(token, cancellationToken);
+                }
+                _logger.LogInformation("Revoked {Count} old sessions for user {UserId}", tokensToRevoke.Count, user.Id);
+            }
 
             var isHttps = _httpContextAccessor.HttpContext?.Request.IsHttps ?? false;
             var sameSite = isHttps ? SameSiteMode.Strict : SameSiteMode.Lax;

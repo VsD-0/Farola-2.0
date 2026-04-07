@@ -1,9 +1,9 @@
-﻿using Farola.Application.DTOs.Sessions.Sessions;
-using Farola.Domain.Interfaces.Repositories;
+﻿using Farola.Domain.Interfaces.Repositories;
 using MediatR;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Farola.Application.DTOs.Sessions;
 
 namespace Farola.Application.Features.Sessions.Queries.GetSessions
 {

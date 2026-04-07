@@ -18,6 +18,7 @@ namespace Farola.Application.Tests.Features.Auth.Commands.RefreshToken
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
         private readonly RefreshTokenCommandHandler _handler;
         private readonly Mock<ILogger<RefreshTokenCommandHandler>> _loggerMock = new();
+        private readonly Mock<IDeviceFingerprintService> _fingerprintServiceMock = new();
 
         public RefreshTokenCommandHandlerTests()
         {
@@ -26,7 +27,8 @@ namespace Farola.Application.Tests.Features.Auth.Commands.RefreshToken
                 _tokenService.Object,
                 _httpContextAccessor.Object,
                 _unitOfWork.Object,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _fingerprintServiceMock.Object);
         }
 
         [Fact]

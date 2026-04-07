@@ -49,7 +49,7 @@ namespace Farola.Infrastructure.Tests.Repositories
                 Email = "test@example.com",
                 Name = "Test",
                 Surname = "User",
-                PhoneNumber = "123",
+                PhoneNumber = "+1234567890",
                 RoleId = 1,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
@@ -71,7 +71,7 @@ namespace Farola.Infrastructure.Tests.Repositories
                 Email = "unique@example.com",
                 Name = "Email",
                 Surname = "Test",
-                PhoneNumber = "123",
+                PhoneNumber = "+1234567890",
                 RoleId = 1,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
@@ -102,7 +102,7 @@ namespace Farola.Infrastructure.Tests.Repositories
                 Email = "exists@example.com",
                 Name = "Exists",
                 Surname = "Test",
-                PhoneNumber = "123",
+                PhoneNumber = "+1234567890",
                 RoleId = 1,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false
@@ -130,7 +130,7 @@ namespace Farola.Infrastructure.Tests.Repositories
                 Email = "update@example.com",
                 Name = "Original",
                 Surname = "Test",
-                PhoneNumber = "123",
+                PhoneNumber = "+1234567890",
                 RoleId = 1,
                 DateRegistration = DateTime.UtcNow,
                 IsClosed = false

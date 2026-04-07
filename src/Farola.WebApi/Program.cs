@@ -1,11 +1,13 @@
 using AspNetCoreRateLimit;
 using Farola.Application;
+using Farola.Domain.Configuration;
 using Farola.Infrastructure;
 using Farola.Infrastructure.Data;
 using Farola.Infrastructure.Data.Configurations;
 using Farola.Infrastructure.Services;
 using Farola.WebApi.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -85,6 +87,8 @@ if (jwtSettings == null)
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddSingleton(jwtSettings);
 
+builder.Services.Configure<SecuritySettings>(builder.Configuration.GetSection("SecuritySettings"));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -119,6 +123,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpClient("FarolaAPI", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001");
+    client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -126,11 +136,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<FarolaDbContext>();
     db.Database.Migrate();
 
-    if (app.Environment.IsDevelopment())
-    {
-        var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
-        await seeder.SeedAsync(db);
-    }
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await seeder.SeedAsync(db);
 }
 
 if (app.Environment.IsDevelopment())
@@ -140,6 +147,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseAuthentication();
 
@@ -154,7 +166,7 @@ app.UseCors("AllowAll");
 
 app.MapControllers();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

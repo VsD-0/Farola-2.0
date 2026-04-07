@@ -1,4 +1,4 @@
-﻿namespace Farola.Application.DTOs.Sessions.Sessions
+﻿namespace Farola.Application.DTOs.Sessions
 {
     /// <summary>
     /// Информация об активной сессии (устройстве).

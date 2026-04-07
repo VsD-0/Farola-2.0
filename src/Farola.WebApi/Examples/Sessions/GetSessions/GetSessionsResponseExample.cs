@@ -1,4 +1,4 @@
-﻿using Farola.Application.DTOs.Sessions.Sessions;
+﻿using Farola.Application.DTOs.Sessions;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Farola.WebApi.Examples.Sessions.GetSessions

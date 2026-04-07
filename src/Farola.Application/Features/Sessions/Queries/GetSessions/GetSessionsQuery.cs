@@ -1,4 +1,4 @@
-﻿using Farola.Application.DTOs.Sessions.Sessions;
+﻿using Farola.Application.DTOs.Sessions;
 using MediatR;
 
 namespace Farola.Application.Features.Sessions.Queries.GetSessions

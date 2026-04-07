@@ -73,6 +73,9 @@ namespace Farola.Infrastructure.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP")
                         .HasComment("Дата и время создания");
 
+                    b.Property<string>("DeviceFingerprint")
+                        .HasColumnType("text");
+
                     b.Property<string>("DeviceId")
                         .IsRequired()
                         .HasColumnType("text");

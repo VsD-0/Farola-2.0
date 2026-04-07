@@ -1,9 +1,12 @@
 ﻿using Farola.Application.Common.Models;
+using Farola.Application.Features.Auth.Commands.ChangePassword;
 using Farola.Application.Features.Auth.Commands.Login;
 using Farola.Application.Features.Auth.Commands.RefreshToken;
+using Farola.WebApi.Examples.Auth.ChangePassword;
 using Farola.WebApi.Examples.Auth.Login;
 using Farola.WebApi.Examples.Auth.Refresh;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -76,6 +79,28 @@ namespace Farola.WebApi.Controllers
         {
             var result = await _mediator.Send(command);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Смена пароля текущего пользователя. При успешной смене все активные сессии отзываются.
+        /// </summary>
+        /// <param name="command">Старый и новый пароль.</param>
+        /// <response code="200">Пароль успешно изменён.</response>
+        /// <response code="400">Ошибка валидации (пустые поля или короткий пароль).</response>
+        /// <response code="401">Неверный старый пароль или пользователь не авторизован.</response>
+        [HttpPost("change-password")]
+        [Authorize]
+        [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [SwaggerRequestExample(typeof(ChangePasswordCommand), typeof(ChangePasswordRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ChangePasswordSuccessExample))]
+        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(ChangePasswordBadRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status401Unauthorized, typeof(ChangePasswordUnauthorizedExample))]
+        public async Task<IActionResult> ChangePassword(ChangePasswordCommand command)
+        {
+            await _mediator.Send(command);
+            return Ok(new { message = "Password changed successfully. All devices have been logged out." });
         }
     }
 }

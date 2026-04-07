@@ -1,4 +1,6 @@
-﻿namespace Farola.Domain.Entities
+﻿using Farola.Domain.ValueObjects;
+
+namespace Farola.Domain.Entities
 {
     public class User
     {
@@ -6,8 +8,8 @@
         public int RoleId { get; set; }
         public string Surname { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
+        public Email Email { get; set; } = null!;
+        public PhoneNumber PhoneNumber { get; set; } = null!;
         public string Password { get; set; } = string.Empty;
         public string? Area { get; set; }
         public string? Information { get; set; }

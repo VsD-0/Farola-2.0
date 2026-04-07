@@ -19,7 +19,8 @@ namespace Farola.Domain.Tests.Entities
                 DeviceName = "MyDevice",
                 IpAddress = "127.0.0.1",
                 UserAgent = "TestAgent",
-                LastUsedAt = DateTime.UtcNow
+                LastUsedAt = DateTime.UtcNow,
+                DeviceFingerprint = "test-fingerprint"
             };
 
             Assert.Equal(1, token.Id);
@@ -28,6 +29,7 @@ namespace Farola.Domain.Tests.Entities
             Assert.Equal("device-1", token.DeviceId);
             Assert.Equal("MyDevice", token.DeviceName);
             Assert.NotNull(token.LastUsedAt);
+            Assert.Equal("test-fingerprint", token.DeviceFingerprint);
         }
 
         [Fact]
@@ -41,9 +43,11 @@ namespace Farola.Domain.Tests.Entities
                 ExpiresAt = DateTime.UtcNow.AddDays(1),
                 IsRevoked = false,
                 DeviceId = "d",
-                DeviceName = "n"
+                DeviceName = "n",
+                DeviceFingerprint = null
             };
             Assert.Null(token.LastUsedAt);
+            Assert.Null(token.DeviceFingerprint);
         }
     }
 }

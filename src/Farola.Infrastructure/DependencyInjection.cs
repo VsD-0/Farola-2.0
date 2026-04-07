@@ -32,6 +32,7 @@ namespace Farola.Infrastructure
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
 
+            services.AddScoped<IDeviceFingerprintService, DeviceFingerprintService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<DbSeeder>();
 

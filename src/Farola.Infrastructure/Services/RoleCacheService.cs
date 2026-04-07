@@ -33,7 +33,7 @@ namespace Farola.Infrastructure.Services
 
         public async Task<Role?> GetRoleByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var key = $"{RoleKeyPrefix}id_{id}";
+            var key = $"role_id_{id}";
             var cached = await _cache.GetAsync<Role>(key, cancellationToken);
             if (cached != null) return cached;
 

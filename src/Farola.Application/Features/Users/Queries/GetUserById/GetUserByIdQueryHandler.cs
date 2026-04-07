@@ -1,22 +1,30 @@
-﻿using MediatR;
-using Farola.Domain.Entities;
+﻿using AutoMapper;
+using Farola.Application.DTOs.Users;
 using Farola.Domain.Interfaces.Repositories;
-using Farola.Domain.Exceptions;
+using MediatR;
 
 namespace Farola.Application.Features.Users.Queries.GetUserById
 {
-    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, User>
+    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
 
-        public GetUserByIdQueryHandler(IUserRepository userRepository)
+        public GetUserByIdQueryHandler(
+            IUserRepository userRepository,
+            IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
-        public async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        public async Task<UserDto?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
-            return await _userRepository.GetByIdAsync(request.Id);
+            var user = await _userRepository.GetByIdAsync(request.Id);
+            if (user == null)
+                return null;
+
+            return _mapper.Map<UserDto>(user);
         }
     }
 }

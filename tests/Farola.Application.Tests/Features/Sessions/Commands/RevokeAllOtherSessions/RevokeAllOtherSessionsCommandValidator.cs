@@ -1,7 +1,7 @@
 ﻿using Farola.Application.Features.Sessions.Commands.RevokeAllOtherSessions;
 using FluentValidation.TestHelper;
 
-namespace Farola.Application.Tests.Validators
+namespace Farola.Application.Tests.Features.Sessions.Commands.RevokeAllOtherSessions
 {
     public class RevokeAllOtherSessionsCommandValidatorTests
     {
