@@ -30,9 +30,9 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
             if (await _userRepository.EmailExistsAsync(request.Email))
                 throw new InvalidOperationException("Email already exists");
 
-            var clientRole = await _roleCacheService.GetRoleByNameAsync("Client", cancellationToken);
-            if (clientRole == null)
-                throw new InvalidOperationException("Role 'Client' not found. Ensure roles are seeded.");
+            var role = await _roleCacheService.GetRoleByIdAsync(request.RoleId, cancellationToken);
+            if (role == null)
+                throw new InvalidOperationException($"Role with id {request.RoleId} not found.");
 
             var hashedPassword = _passwordHasher.HashPassword(request.Password);
 
@@ -44,7 +44,7 @@ namespace Farola.Application.Features.Users.Commands.CreateUser
                 Surname = request.Surname,
                 Name = request.Name,
                 PhoneNumber = request.PhoneNumber,
-                RoleId = clientRole.Id,
+                RoleId = role.Id,
                 Patronymic = request.Patronymic,
                 Profession = request.Profession,
                 Area = request.Area,

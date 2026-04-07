@@ -1,5 +1,8 @@
-﻿using Farola.Application.Features.Users.Queries.GetUserById;
+﻿using AutoMapper;
+using Farola.Application.Features.Users.Queries.GetUserById;
+using Farola.Domain.Constants;
 using Farola.Domain.Entities;
+using Farola.Domain.Enums;
 using Farola.Domain.Interfaces.Repositories;
 using Moq;
 
@@ -8,11 +11,12 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
     public class GetUserByIdQueryHandlerTests
     {
         private readonly Mock<IUserRepository> _userRepo = new();
+        private readonly Mock<IMapper> _mapperMock = new();
         private readonly GetUserByIdQueryHandler _handler;
 
         public GetUserByIdQueryHandlerTests()
         {
-            _handler = new GetUserByIdQueryHandler(_userRepo.Object);
+            _handler = new GetUserByIdQueryHandler(_userRepo.Object, _mapperMock.Object);
         }
 
         [Fact]
@@ -21,7 +25,7 @@ namespace Farola.Application.Tests.Features.Users.Queries.GetUserById
             // Arrange
             var userId = 5;
             var query = new GetUserByIdQuery(userId);
-            var role = new Role { Id = 1, Name = "Client" };
+            var role = new Role { Id = (int)RoleType.Client, Name = RoleNames.Client };
             var user = new User
             {
                 Id = userId,

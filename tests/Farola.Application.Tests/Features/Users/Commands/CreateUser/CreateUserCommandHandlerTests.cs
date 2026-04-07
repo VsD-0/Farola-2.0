@@ -1,5 +1,7 @@
 ﻿using Farola.Application.Features.Users.Commands.CreateUser;
+using Farola.Domain.Constants;
 using Farola.Domain.Entities;
+using Farola.Domain.Enums;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Repositories;
 using Farola.Domain.Interfaces.Services;
@@ -43,8 +45,8 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
             );
 
             var role = new Role { Id = 1, Name = "Client" };
-            _roleCache.Setup(r => r.GetRoleByNameAsync("Client", It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new Role { Id = 1, Name = "Client" });
+            _roleCache.Setup(r => r.GetRoleByIdAsync(command.RoleId, It.IsAny<CancellationToken>()))
+    .ReturnsAsync(new Role { Id = (int)RoleType.Client, Name = RoleNames.Client });
             _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
                 .ReturnsAsync(false);
             _hasher.Setup(h => h.HashPassword(command.Password)).Returns("hashed_password");
@@ -77,8 +79,8 @@ namespace Farola.Application.Tests.Features.Users.Commands.CreateUser
             var command = new CreateUserCommand("new@example.com", "pass", "Doe", "John", "+123", 999);
             _userRepo.Setup(r => r.EmailExistsAsync(command.Email))
                 .ReturnsAsync(false);
-            _roleCache.Setup(r => r.GetRoleByIdAsync(999, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Role?)null);
+            _roleCache.Setup(r => r.GetRoleByIdAsync(command.RoleId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Role { Id = (int)RoleType.Client, Name = RoleNames.Client });
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
             _userRepo.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);

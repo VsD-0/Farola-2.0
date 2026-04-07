@@ -1,4 +1,6 @@
-﻿using Farola.Domain.Entities;
+﻿using Farola.Domain.Constants;
+using Farola.Domain.Entities;
+using Farola.Domain.Enums;
 using Farola.Domain.Interfaces;
 using Farola.Domain.Interfaces.Services;
 using Farola.Infrastructure.Data.Configurations;
@@ -26,11 +28,11 @@ namespace Farola.Infrastructure.Data
 
             // 1. Роли
             var roles = new List<Role>
-        {
-            new Role { Id = 1, Name = "Client" },
-            new Role { Id = 2, Name = "Professional" },
-            new Role { Id = 3, Name = "Admin" }
-        };
+            {
+                new Role { Id = (int)RoleType.Client, Name = RoleNames.Client },
+                new Role { Id = (int)RoleType.Professional, Name = RoleNames.Professional },
+                new Role { Id = (int)RoleType.Admin, Name = RoleNames.Admin }
+            };
             await _context.Roles.AddRangeAsync(roles);
 
             // 2. Статусы заявлений
